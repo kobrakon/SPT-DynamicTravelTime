@@ -16,7 +16,7 @@ Time will no longer move out of raid and travel time will be added between raids
 
 `I could also have the Offraid positions pull from the PTT config but this keeps PTT Modular.`
 
-### Thanks ZTrap for your wonderful PTT Mod
+### Thanks Trap for your wonderful PTT Mod
 
 ### Big Thanks to SamSWAT / TimeWeatherChanger
 
