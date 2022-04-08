@@ -44,6 +44,7 @@
     <Compile Include="DynamicTimeCyleController.cs" />
     <Compile Include="DynamicTimeCylePlugin.cs" />
     <Compile Include="Helper\PTTConfig.cs" />
+    <Compile Include="Helper\Reader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
