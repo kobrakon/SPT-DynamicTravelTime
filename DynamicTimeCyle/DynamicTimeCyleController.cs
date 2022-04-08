@@ -1,6 +1,7 @@
 ﻿using Comfort.Common;
 using EFT;
 using EFT.UI;
+using EFT.Weather;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,17 @@ namespace r1ft.DynamicTimeCyle
         private static MethodInfo CalculateTime;
         private static MethodInfo ResetTime;
 
+        private static string _offraidPos = "";
+
         private static double _cacheTimeHour = 99;
         private static double _cacheTimeMin = 99;
 
         private static bool _init = false;
 
         private static readonly string serverlog = Path.Combine(Application.dataPath, "..\\user\\logs\\server.log");
-
         private static readonly string pttconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\ZTrap-PathToTarkov\\config\\travel.json");
+
+        private static List<PTTConfig.Locations> _pttConfig = null;
 
         private bool IsTargetMethod(MethodInfo mi)
         {
@@ -37,14 +41,26 @@ namespace r1ft.DynamicTimeCyle
 
         public void Update()
         {
+            if (_pttConfig == null)
+                _pttConfig = Reader.ReadPTTConfig(pttconfig);
+
             gameWorld = Singleton<GameWorld>.Instance;
             if (gameWorld == null)
             {
                 if (_init)
+                {
+                    var offraidPos = Reader.GetOffRaidPos(serverlog);
+                    DEBUGMsg($"offraid pos: {offraidPos}");
+                    if (offraidPos != _offraidPos)
+                        _offraidPos = offraidPos;
                     _init = !_init;
+                }
 
                 return;
             }
+
+            if (GameObject.Find("Weather") == null)
+                return;
 
             if (gameWorld.AllPlayers == null)
                 return;
@@ -55,11 +71,12 @@ namespace r1ft.DynamicTimeCyle
             if (gameWorld.AllPlayers[0] is HideoutPlayer)
                 return;
 
-
             if (gameWorld.GameDateTime == null)
                 return;
 
             gameDateTime = gameWorld.GameDateTime.GetType();
+            if (gameDateTime == null)
+                return;
 
             CalculateTime = gameDateTime.GetMethod("Calculate", BindingFlags.Public | BindingFlags.Instance);
             if (CalculateTime == null)
@@ -74,28 +91,35 @@ namespace r1ft.DynamicTimeCyle
             {
                 _cacheTimeHour = currentDateTime.Hour;
                 _cacheTimeMin = currentDateTime.Minute;
-                PreloaderUI.Instance.Console.AddLog($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}", "");
+                DEBUGMsg($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
             }
-
-            if (gameWorld.LocationId == null)
-                return;
-
-            MapName.QuestMapNameToIdMap.TryGetValue(gameWorld.LocationId, out var currentMap);
 
             if (!_init)
             {
-                var hourOffset = 0;
-                var minOffset = GetOffRaidTime();
-                if (minOffset > 60)
+                var hourOffset = _cacheTimeHour;
+                var minOffset = _cacheTimeMin;
+                if (_offraidPos != "")
                 {
-                    hourOffset += Mathf.RoundToInt(minOffset / 60);
-                    minOffset -= Mathf.RoundToInt(minOffset / 60) * 60;
+                    var config = _pttConfig.ToArray();
+                    foreach (var location in config)
+                    {
+                        if (location.OffraidPosition != _offraidPos)
+                            continue;
+
+                        minOffset += location.TravelTime;
+                        break;
+                    }
+
+                    if (minOffset > 60)
+                    {
+                        hourOffset += Mathf.RoundToInt((int)minOffset / 60);
+                        minOffset -= Mathf.RoundToInt((int)minOffset / 60) * 60;
+                    }
                 }
                 var modifiedDateTime = currentDateTime.AddHours(hourOffset - currentDateTime.Hour);
                 modifiedDateTime = modifiedDateTime.AddMinutes(minOffset - currentDateTime.Minute);
                 ResetTime.Invoke(gameWorld.GameDateTime, new object[] { modifiedDateTime });
-                var debugstring = "Time was set to: " + modifiedDateTime.ToString("HH:mm");
-                PreloaderUI.Instance.Console.AddLog(debugstring, "");
+                DEBUGMsg($"Time was set to: {modifiedDateTime:HH:mm}");
                 _init = !_init;
                 return;
             }
@@ -105,63 +129,12 @@ namespace r1ft.DynamicTimeCyle
             return;
         }
 
-        public static int GetOffRaidTime()
+        private static void DEBUGMsg(string msg)
         {
-            System.IO.FileStream f_serverlog = new System.IO.FileStream(serverlog, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
-
-            System.IO.StreamReader s_serverlog = new System.IO.StreamReader(f_serverlog);
-
-            List<string> lst = new List<string>();
-
-            var offraidpos = "";
-
-            while (!s_serverlog.EndOfStream)
-                lst.Add(s_serverlog.ReadLine());
-
-            s_serverlog.Close();
-
-            f_serverlog.Close();
-
-            foreach (var line in lst.ToArray())
-            {
-                if (!line.Contains("=> PathToTarkov: player offraid position changed to"))
-                    continue;
-
-                var split = line.Split(' ');
-                offraidpos = split[split.Length].Trim();
-            }
-
-
-
-            System.IO.FileStream f_pttconfig = new System.IO.FileStream(pttconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
-
-            System.IO.StreamReader s_pttconfig = new System.IO.StreamReader(f_pttconfig);
-
-            lst = new List<string>();
-
-            while (!s_serverlog.EndOfStream)
-                lst.Add(s_serverlog.ReadLine());
-
-            s_pttconfig.Close();
-
-            f_pttconfig.Close();
-
-            var traveltime = 0;
-
-            foreach (var line in lst.ToArray())
-            {
-                var split = line.Split(':');
-                var posname = split[0].Replace('"', ' ').Trim();
-                if (offraidpos != posname)
-                    continue;
-
-                traveltime = int.Parse(split[1].Trim());
-
-                break;
-
-            }
-
-            return traveltime;
+#if debug
+                PreloaderUI.Instance.Console.AddLog(msg, "DEBUG");
+#endif
+            return;
         }
     }
 }
