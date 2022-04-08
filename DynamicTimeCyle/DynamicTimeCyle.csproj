@@ -77,7 +77,6 @@ move $(TargetFileName) ..
 del /Q *
 mkdir BepInEx\plugins
 move ..\$(TargetFileName) .\BepInEx\plugins\
-copy ..\$(TargetFileName) .\
 mkdir user\mods\ZTrap-PathToTarkov\config
 copy ..\..\..\Resources\travel.json .\user\mods\ZTrap-PathToTarkov\config\</PostBuildEvent>
   </PropertyGroup>
