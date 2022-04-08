@@ -71,4 +71,13 @@
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>cd $(TargetDir)
+move $(TargetFileName) ..
+del /Q *
+move ..\$(TargetFileName) .\
+copy ..\$(TargetFileName) .\
+mkdir user\mods\ZTrap-PathToTarkov\config
+copy ..\..\..\Resources\travel.json .\user\mods\ZTrap-PathToTarkov\config\</PostBuildEvent>
+  </PropertyGroup>
 </Project>
