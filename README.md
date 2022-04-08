@@ -12,9 +12,11 @@ Time will no longer move out of raid and travel time will be added between raids
 
 
 ### Notes
-Factory and Labs have no Weather Module so you cannot change in-game time (I could hunt down the network function and patch it but I'm lazy 😪)
-I could also have the Offraid positions pull from the PTT config but this keeps PTT Modular.
+`Factory and Labs have no Weather Module so you cannot change in-game time (I could hunt down the network function and patch it but I'm lazy 😪)`
 
-Thanks ZTrap for your wonderful PTT Mod
-Big Thanks to SamSWAT / TimeWeatherChanger
+`I could also have the Offraid positions pull from the PTT config but this keeps PTT Modular.`
+
+### Thanks ZTrap for your wonderful PTT Mod
+
+### Big Thanks to SamSWAT / TimeWeatherChanger
 
