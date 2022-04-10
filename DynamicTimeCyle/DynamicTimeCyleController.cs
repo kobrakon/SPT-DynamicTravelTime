@@ -26,6 +26,7 @@ namespace r1ft.DynamicTimeCyle
         private static bool _init = false;
         private static bool _hideout = false;
         private static bool _persistanceinit = false;
+        private static bool _outofRaidSave = false;
 
         public static bool _factoryNight = false;
 
@@ -96,10 +97,14 @@ namespace r1ft.DynamicTimeCyle
             if (gameWorld == null)
             {
                 SetPersistance();
+                if (!_outofRaidSave)
+                    SetOffRaidPosition();
+
                 _init = false;
                 return;
             }
 
+            _outofRaidSave = false;
             if (gameWorld.AllPlayers == null)
                 return;
 
@@ -119,16 +124,16 @@ namespace r1ft.DynamicTimeCyle
                     }
                     else
                     {
-                        if (gameWorld.LocationId == null)
+                        if (gameWorld.AllPlayers[0].Location == null)
                             return;
 
-                        if (gameWorld.LocationId == "55f2d3fd4bdc2d5f408b4567")
+                        if (gameWorld.AllPlayers[0].Location == "factory4_day")
                         {
                             _cacheTimeHour = 15;
                             _cacheTimeMin = 28;
                         }
 
-                        if (gameWorld.LocationId == "59fc81d786f774390775787e")
+                        if (gameWorld.AllPlayers[0].Location == "factory4_night")
                         {
                             _cacheTimeHour = 3;
                             _cacheTimeMin = 28;
@@ -146,16 +151,16 @@ namespace r1ft.DynamicTimeCyle
 
                 if (!_init && _hideout)
                 {
-                    if (gameWorld.LocationId == null)
+                    if (gameWorld.AllPlayers[0].Location == null)
                         return;
 
-                    if (gameWorld.LocationId == "55f2d3fd4bdc2d5f408b4567")
+                    if (gameWorld.AllPlayers[0].Location == "factory4_day")
                     {
                         _cacheTimeHour = 15;
                         _cacheTimeMin = 28;
                     }
 
-                    if (gameWorld.LocationId == "59fc81d786f774390775787e")
+                    if (gameWorld.AllPlayers[0].Location == "factory4_night")
                     {
                         _cacheTimeHour = 3;
                         _cacheTimeMin = 28;
@@ -232,16 +237,19 @@ namespace r1ft.DynamicTimeCyle
         {
             var offraidPos = Reader.GetOffRaidPos(_pttConfigMain, serverlog, out var found);
             if (_offraidPos == "" || found)
-                _offraidPos = offraidPos;
-
-            _hideout = false;
-            foreach (var hideoutposition in _pttConfigMain.hideout_main_stash_access_via)
             {
-                if (hideoutposition != _offraidPos)
-                    continue;
+                _offraidPos = offraidPos;
+                _hideout = false;
+                foreach (var hideoutposition in _pttConfigMain.hideout_main_stash_access_via)
+                {
+                    DEBUGMsg(hideoutposition);
+                    DEBUGMsg(_offraidPos);
+                    if (hideoutposition != _offraidPos)
+                        continue;
 
-                _hideout = true;
-                break;
+                    _hideout = true;
+                    break;
+                }
             }
 
             Writer.WritePersistance(new PTTConfig.Persistance { currentLocation = _offraidPos, currentHour = _cacheTimeHour, currentMin = _cacheTimeMin, hideout = _hideout }, pttpersistance);
@@ -253,6 +261,9 @@ namespace r1ft.DynamicTimeCyle
             DEBUGMsg($"Hideout : {_hideout}");
 #endif
             Notifier.DisplayMessageNotification($"Current Raid Time: {(_cacheTimeHour < 10 ? "0" : "")}{string.Format("{0:0,0}", _cacheTimeHour)}:{string.Format("{0:0,0}", _cacheTimeMin)}");
+
+            _outofRaidSave = true;
+
             return;
         }
 
@@ -279,6 +290,10 @@ namespace r1ft.DynamicTimeCyle
                             DEBUGMsg($"Hideout : {_hideout}");
 #endif
                             return;
+                        }
+                        else
+                        {
+                            SetOffRaidPosition();
                         }
                     }
                 }

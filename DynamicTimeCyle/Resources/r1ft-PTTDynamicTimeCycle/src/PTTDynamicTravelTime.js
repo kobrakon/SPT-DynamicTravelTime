@@ -6,7 +6,6 @@ function removeByteOrderMark(str){
 
 function getFactory() {
     var fs = require('fs');
-    Logger.info(fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8'));
     var file = fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8');
     var json = JSON.parse(removeByteOrderMark(file));
     var hideout = json.hideout;
@@ -41,9 +40,12 @@ class PTTDynamicTravelTime {
             getFactory();
         })
 
-        InraidController.saveProgress = () => {
-            getFactory();
-        }
+        HttpRouter.onStaticRoute["/client/locations"]["ZZZ-ZZZ-MUSTBELAST-PTTDynamicTravelTime"] = PTTDynamicTravelTime.RouteLocations;
+    }
+
+    static RouteLocations(url, info, sessionID) {
+        getFactory();
+        return HttpResponse.getBody(LocationController.generateAll())
     }
 }
 
