@@ -1,20 +1,12 @@
-Pre Alpha Version Althogh mostly Stable Havent Tested much.
+Alpha Version Althogh mostly Stable Havent Tested much.
 
 # Install
 1. Extract Files
 2. Copy both Folders to Root AKI Folder
-3. Edit travel.json in PTT Config Folder with current Offraid Positions accoring to your PTT Config. (I have not sanitized my version to the master PTT yet)
+3. Edit traveltime.json in r1ft-PTTDynamicTimeCycle with current Offraid Positions accoring to your PTT Config. (I have not sanitized my version to the master PTT yet)
 
 ## Using
-
-When fist staring game and selecting a time you lock that time in until restarting the client. (I can make this a saved file that would persist though reboots ... 🤔)
-Time will no longer move out of raid and travel time will be added between raids not including your first raid on client start.
-
-
-### Notes
-`Factory and Labs have no Weather Module so you cannot change in-game time (I could hunt down the network function and patch it but I'm lazy 😪)`
-
-`I could also have the Offraid positions pull from the PTT config but this keeps PTT Modular.`
+Locks raid time to a 24 Hour Cycle till leaving hideout or dying. Labs and Factory have no Weather Module so time cannot be changed on these maps. (Factory is locked to day or night based on time). Travel Times are in Minutes and can be configured in traveltime.json. (Travel time takes place when loading into raid) The 24 hour cycle will also persist though server and client reboots.
 
 ### Thanks Trap for your wonderful PTT Mod
 
