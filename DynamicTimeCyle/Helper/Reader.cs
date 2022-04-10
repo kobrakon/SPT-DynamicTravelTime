@@ -128,17 +128,19 @@ namespace r1ft.DynamicTimeCyle
                 if (!hit.Contains("=> PathToTarkov: player offraid position changed to"))
                     continue;
 
-                var splitchar = " ";
-                var split = hit.Split(splitchar.ToCharArray()[0]);
+
+                var split = hit.Split(' ');
                 offraidpos = split[split.Length - 1].Trim();
-                var removechar = "'";
-                offraidpos.Replace(removechar.ToCharArray()[0], splitchar.ToCharArray()[0]).Trim();
+                offraidpos = offraidpos.Replace("'", " ").Trim();
                 found = true;
                 break;
             }
 
             if (offraidpos == "")
+            {
                 offraidpos = pttconfig.initial_offraid_position;
+                offraidpos = offraidpos.Replace("'", " ").Trim();
+            }
 
             return offraidpos;
         }
