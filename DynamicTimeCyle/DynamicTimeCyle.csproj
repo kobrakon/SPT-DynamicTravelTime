@@ -38,16 +38,24 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="travel.json" />
+    <None Include="Resources\r1ft-PTTDynamicTimeCycle\cfg\persistance.json" />
+    <None Include="Resources\r1ft-PTTDynamicTimeCycle\cfg\traveltime.json" />
+    <None Include="Resources\r1ft-PTTDynamicTimeCycle\package.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicTimeCyleController.cs" />
-    <Compile Include="DynamicTimeCylePlugin.cs" />
+    <Compile Include="DynamicTimeCyclePlugin.cs" />
+    <Compile Include="Helper\Notifier.cs" />
     <Compile Include="Helper\PTTConfig.cs" />
     <Compile Include="Helper\Reader.cs" />
+    <Compile Include="Helper\Writer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Aki.Reflection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Games\aki\EscapeFromTarkov_Data\Managed\Aki.Reflection.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Games\aki\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
@@ -70,6 +78,11 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\r1ft-PTTDynamicTimeCycle\package.js" />
+    <Content Include="Resources\r1ft-PTTDynamicTimeCycle\src\PTTDynamicTravelTime.js" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd $(TargetDir)
@@ -77,7 +90,7 @@ move $(TargetFileName) ..
 del /Q *
 mkdir BepInEx\plugins
 move ..\$(TargetFileName) .\BepInEx\plugins\
-mkdir user\mods\ZTrap-PathToTarkov\config
-copy ..\..\..\Resources\travel.json .\user\mods\ZTrap-PathToTarkov\config\</PostBuildEvent>
+mkdir user\mods\r1ft-PTTDynamicTimeCycle
+xcopy /s /y ..\..\Resources\r1ft-PTTDynamicTimeCycle user\mods\r1ft-PTTDynamicTimeCycle\</PostBuildEvent>
   </PropertyGroup>
 </Project>
