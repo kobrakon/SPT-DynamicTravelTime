@@ -1,8 +1,14 @@
 "use strict";
 
+function removeByteOrderMark(str){
+    return str.replace(/^\ufeff/g,"")
+}
+
 function getFactory() {
     var fs = require('fs');
-    var json = JSON.parse(fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8'));
+    Logger.info(fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8'));
+    var file = fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8');
+    var json = JSON.parse(removeByteOrderMark(file));
     var hideout = json.hideout;
     var hour = json.currentHour;
     if (!hideout) {
