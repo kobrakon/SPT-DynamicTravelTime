@@ -4,7 +4,7 @@ using BepInEx;
 namespace r1ft.DynamicTimeCyle
 {
     [BepInPlugin("com.r1ft.DynamicTimeCyle", "r1ft.DynamicTimeCyle", "2.2.0")]
-    public class DynamicTimeCyle : BaseUnityPlugin
+    public class DynamicTimeCycle : BaseUnityPlugin
     {
         public static GameObject Hook;
 
@@ -12,7 +12,7 @@ namespace r1ft.DynamicTimeCyle
         {
             Logger.LogInfo("Loading: r1fT-DynamicTimeCyle");
             Hook = new GameObject("DynamicTimeCyle");
-            Hook.AddComponent<DynamicTimeCyleController>();
+            Hook.AddComponent<DynamicTimeCycleController>();
             DontDestroyOnLoad(Hook);
         }
     }
