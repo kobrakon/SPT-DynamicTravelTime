@@ -1,16 +1,19 @@
 "use strict";
 
-function removeByteOrderMark(str){
-    return str.replace(/^\ufeff/g,"")
+function removeByteOrderMark(str) {
+    return str.replace(/^\ufeff/g, "")
 }
 
-function getFactory() {
-    var fs = require('fs');
-    var file = fs.readFileSync('./user/mods/r1ft-PTTDynamicTimeCycle/cfg/persistance.json', 'utf8');
-    var json = JSON.parse(removeByteOrderMark(file));
-    var hideout = json.hideout;
-    var hour = json.currentHour;
-    if (!hideout) {
+function removeQuotesMark(str) {
+    return str.replace(/^\"/g, "")
+}
+
+function getFactory(sessionID) {
+    var profile = SaveServer.profiles[sessionID];
+    var hideout = profile.PTTDynamicTravelTime.hideout;
+    var hour = removeQuotesMark(profile.PTTDynamicTravelTime.hour);
+
+    if (hideout == "false") {
         if (hour > 5 && hour < 19) {
             Logger.info("=> PTT Dynamic Time Cycle : Factory Night Locked");
             DatabaseServer.tables.locations.factory4_night.base.Locked = true;
@@ -36,16 +39,53 @@ class PTTDynamicTravelTime {
             return;
         }
 
-        PathToTarkovAPI.onStart(() => {
-            getFactory();
-        })
+        HttpRouter.onStaticRoute["/pttdynamictravel/offraidPosition"] = {
+            config: PTTDynamicTravelTime.onRequestPosition.bind(this)
+        };
 
-        HttpRouter.onStaticRoute["/client/locations"]["ZZZ-ZZZ-MUSTBELAST-PTTDynamicTravelTime"] = PTTDynamicTravelTime.RouteLocations;
+        HttpRouter.onStaticRoute["/pttdynamictravel/config"] = {
+            config: PTTDynamicTravelTime.onRequestConfig.bind(this)
+        };
+
+        HttpRouter.onDynamicRoute["/pttdynamictravel/post/"] = {
+            postconfig: PTTDynamicTravelTime.onRequesPostConfig.bind(this)
+        };
     }
 
-    static RouteLocations(url, info, sessionID) {
-        getFactory();
-        return HttpResponse.getBody(LocationController.generateAll())
+    static onRequestConfig(url, info, sessionID) {
+        var profile = SaveServer.profiles[sessionID];
+        if (profile.PTTDynamicTravelTime == null) {
+            profile.PTTDynamicTravelTime = {};
+            profile.PTTDynamicTravelTime.hour = 99;
+            profile.PTTDynamicTravelTime.min = 99;
+            profile.PTTDynamicTravelTime.hideout = true;
+        }
+
+        return HttpResponse.noBody(SaveServer.profiles[sessionID].PTTDynamicTravelTime);
+    }
+
+    static onRequestPosition(url, info, sessionID) {
+        var profile = SaveServer.profiles[sessionID];
+        if (profile.PathToTarkov == null) {
+            profile.PathToTarkov = {};
+            profile.PathToTarkov.mainStashId = "";
+            profile.PathToTarkov.offraidPosition = "null";
+        }
+
+        return HttpResponse.noBody(SaveServer.profiles[sessionID].PathToTarkov);
+    }
+
+    static onRequesPostConfig(url, info, sessionID) {
+        var profile = SaveServer.profiles[sessionID];
+        const splittedUrl = url.split("/");
+
+        profile.PTTDynamicTravelTime.hour = splittedUrl[splittedUrl.length - 3].toLowerCase();
+        profile.PTTDynamicTravelTime.min = splittedUrl[splittedUrl.length - 2].toLowerCase();
+        profile.PTTDynamicTravelTime.hideout = splittedUrl[splittedUrl.length - 1].toLowerCase();
+
+        getFactory(sessionID);
+
+        return HttpResponse.noBody(SaveServer.profiles[sessionID].PTTDynamicTravelTime);
     }
 }
 

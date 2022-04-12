@@ -9,14 +9,18 @@ namespace r1ft.DynamicTimeCyle
             public int TravelTime { get; set; }
         }
 
-        public class Persistance
+        public class PTTProfile
         {
-            public string currentLocation { get; set; }
-            public double currentHour { get; set; }
-            public double currentMin { get; set; }
-            public bool hideout { get; set; }
+            public string mainStashId { get; set; }
+            public string offraidPosition { get; set; }
         }
 
+        public class DTCCProfile
+        {
+            public double hour { get; set; }
+            public double min { get; set; }
+            public bool hideout { get; set; }
+        }
 
         public class MainConfig
         {

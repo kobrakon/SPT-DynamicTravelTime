@@ -20,5 +20,10 @@ namespace r1ft.DynamicTimeCyle
 		{
 			notifierMessageMethod.Invoke(null, new object[] { message, duration, iconType, textColor });
 		}
+
+		public static void DisplayMessageNotification(string message, Color color)
+        {
+			notifierMessageMethod.Invoke(null, new object[] { message, ENotificationDurationType.Infinite, ENotificationIconType.Hideout, color });
+        }
 	}
 }
