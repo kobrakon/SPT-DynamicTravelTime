@@ -1,22 +1,81 @@
-﻿
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+
 namespace r1ft.DynamicTimeCyle
 {
-    class PTTConfig
+    class DTCConfig
     {
+        private static readonly string _dtcconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\r1ft-PTTDynamicTimeCycle\\cfg\\traveltime.json");
+        private static readonly string _pttconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\ZTrap-PathToTarkov\\config\\config.json");
+
+        public static MainConfig GetPTTConfig()
+        {
+            System.IO.FileStream f_pttconfig = new System.IO.FileStream(_pttconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
+
+            System.IO.StreamReader s_pttconfig = new System.IO.StreamReader(f_pttconfig);
+
+            var lst = new List<string>();
+
+            while (!s_pttconfig.EndOfStream)
+                lst.Add(s_pttconfig.ReadLine());
+
+            var jsonstring = "";
+
+            foreach (var line in lst.ToArray())
+            {
+                jsonstring += line.Trim();
+            }
+
+            return JsonConvert.DeserializeObject<MainConfig>(jsonstring);
+        }
+
+        public static List<Locations> GetDTCConfig()
+        {
+            System.IO.FileStream f_pttconfig = new System.IO.FileStream(_dtcconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
+
+            System.IO.StreamReader s_pttconfig = new System.IO.StreamReader(f_pttconfig);
+
+            var lst = new List<string>();
+
+            while (!s_pttconfig.EndOfStream)
+                lst.Add(s_pttconfig.ReadLine());
+
+            var jsonstring = "";
+
+            foreach (var line in lst.ToArray())
+            {
+                jsonstring += line.Trim();
+            }
+
+            var config = JsonConvert.DeserializeObject<Locations[]>(jsonstring);
+            var list = new List<Locations>();
+
+            foreach (var option in config)
+                list.Add(option);
+
+            return list;
+        }
+
         public class Locations
         {
             public string OffraidPosition { get; set; }
             public int TravelTime { get; set; }
         }
 
-        public class Persistance
+        public class PTTProfile
         {
-            public string currentLocation { get; set; }
-            public double currentHour { get; set; }
-            public double currentMin { get; set; }
-            public bool hideout { get; set; }
+            public string mainStashId { get; set; }
+            public string offraidPosition { get; set; }
         }
 
+        public class DTCCProfile
+        {
+            public double hour { get; set; }
+            public double min { get; set; }
+            public bool hideout { get; set; }
+        }
 
         public class MainConfig
         {

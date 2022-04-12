@@ -16,9 +16,19 @@ namespace r1ft.DynamicTimeCyle
 			notifierMessageMethod = notifierType.GetMethod("DisplayMessageNotification");
 		}
 
-		public static void DisplayMessageNotification(string message, ENotificationDurationType duration = ENotificationDurationType.Default, ENotificationIconType iconType = ENotificationIconType.Default, Color? textColor = null)
+		private static void DisplayMessageNotification(string message, Color color)
+        {
+			notifierMessageMethod.Invoke(null, new object[] { message, ENotificationDurationType.Infinite, ENotificationIconType.Hideout, color });
+        }
+
+		public static void DrawCurrentTime(bool hideout, double hour, double min)
 		{
-			notifierMessageMethod.Invoke(null, new object[] { message, duration, iconType, textColor });
+			if (hideout || hour == 99)
+				DisplayMessageNotification($"Hideout", Color.white);
+			else
+				DisplayMessageNotification($"Current Raid Time: {(hour < 10 ? "0" : "")}{string.Format("{0:0,0}", hour)}:{string.Format("{0:0,0}", min)}", Color.white);
+
+			return;
 		}
 	}
 }

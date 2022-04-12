@@ -3,7 +3,6 @@ using EFT;
 using EFT.UI;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -19,29 +18,20 @@ namespace r1ft.DynamicTimeCyle
         private static MethodInfo ResetTime;
 
         private static string _offraidPos = "";
-
         private static double _cacheTimeHour = 99;
         private static double _cacheTimeMin = 99;
-
-        private static bool _init = false;
         private static bool _hideout = false;
-        private static bool _persistanceinit = false;
-        private static bool _outofRaidSave = false;
 
-        public static bool _factoryNight = false;
+        private static readonly float _waitTime = 30;
+        private static float _cacheWait = 0;
+        private static float _startWait = 0;
 
-        private static readonly string serverlog = Path.Combine(Application.dataPath, "..\\user\\logs\\server.log");
-        private static readonly string pttconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\r1ft-PTTDynamicTimeCycle\\cfg\\traveltime.json");
-        private static readonly string pttpersistance = Path.Combine(Application.dataPath, "..\\user\\mods\\r1ft-PTTDynamicTimeCycle\\cfg\\persistance.json");
-        private static readonly string pttconfigmain = Path.Combine(Application.dataPath, "..\\user\\mods\\ZTrap-PathToTarkov\\config\\config.json");
+        private static bool _init = true;
+        private static bool _pttNotInit = false;
+        private static bool _firstStart = true;
 
-        private static List<PTTConfig.Locations> _pttConfig = null;
-        private static PTTConfig.MainConfig _pttConfigMain = null;
-
-#if DEBUG
-        private bool debug1 = false;
-        private bool debug2 = false;
-#endif
+        private static List<DTCConfig.Locations> _dtcConfig = null;
+        private static DTCConfig.MainConfig _pttConfig = null;
 
         private bool IsTargetMethod(MethodInfo mi)
         {
@@ -61,50 +51,53 @@ namespace r1ft.DynamicTimeCyle
             if (!PreloaderUI.Instance.CanShowErrorScreen)
                 return;
 
-            if (_pttConfigMain == null)
-                _pttConfigMain = Reader.GetConfig(pttconfigmain);
+            if (_dtcConfig == null)
+                _dtcConfig = DTCConfig.GetDTCConfig();
 
-#if DEBUG
-            if (debug1)
-            {
-                var offraidPositions = Reader.GetOffRaidPositions(_pttConfigMain);
-                foreach (var position in offraidPositions)
-                {
-                    DEBUGMsg(position);
-                }
-                debug1 = !debug1;
-            }
-#endif
 
             if (_pttConfig == null)
             {
-                _pttConfig = Reader.GetLocation(_pttConfigMain, pttconfig);
+                _pttConfig = DTCConfig.GetPTTConfig();
                 return;
             }
 
-#if DEBUG
-            if (debug2)
+            if (_pttNotInit)
             {
-                foreach (var location in _pttConfig.ToArray())
-                {
-                    DEBUGMsg($"{location.OffraidPosition} : {location.TravelTime}");
-                }
-                debug2 = !debug2;
+                if (_cacheWait == 0)
+                    _cacheWait = Time.time + _waitTime;                
+
+                if (Time.time > _cacheWait)
+                    _pttNotInit = false;
+
+                return;
             }
-#endif
+
+            if (_firstStart)
+            {
+                if (_startWait == 0)
+                    _startWait = Time.time + _waitTime;
+
+                if (Time.time > _startWait)
+                {
+                    _firstStart = false;
+                }
+            }
 
             gameWorld = Singleton<GameWorld>.Instance;
             if (gameWorld == null)
             {
-                SetPersistance();
-                if (!_outofRaidSave)
-                    SetOffRaidPosition();
+                if (_init)
+                {
+                    _pttNotInit = !Network.SetOffRaidPosition(_pttConfig, _cacheTimeHour, _cacheTimeMin, out _offraidPos, out _cacheTimeHour, out _cacheTimeMin, out _hideout);
+                    if (_pttNotInit)
+                        return;
 
-                _init = false;
+                    Notifier.DrawCurrentTime(_hideout, _cacheTimeHour, _cacheTimeMin);
+                    _init = false;
+                }
                 return;
             }
 
-            _outofRaidSave = false;
             if (gameWorld.AllPlayers == null)
                 return;
 
@@ -120,32 +113,16 @@ namespace r1ft.DynamicTimeCyle
                 {
                     if (_cacheTimeHour != 99 && _cacheTimeMin != 99)
                     {
-                        CalculateTimeOffset(out _cacheTimeHour, out _cacheTimeMin);
+                        DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _offraidPos, _dtcConfig.ToArray(), out _cacheTimeHour, out _cacheTimeMin);
                     }
                     else
                     {
                         if (gameWorld.AllPlayers[0].Location == null)
                             return;
 
-                        if (gameWorld.AllPlayers[0].Location == "factory4_day")
-                        {
-                            _cacheTimeHour = 15;
-                            _cacheTimeMin = 28;
-                        }
-
-                        if (gameWorld.AllPlayers[0].Location == "factory4_night")
-                        {
-                            _cacheTimeHour = 3;
-                            _cacheTimeMin = 28;
-                        }
+                        DynamicTime.ReturnFactoryTime(gameWorld.AllPlayers[0].Location, out _cacheTimeHour, out _cacheTimeMin);
                     }
-#if DEBUG
-                    DEBUGMsg($"offraid pos: {_offraidPos}");
-                    DEBUGMsg($"Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                    DEBUGMsg("FACTORY OR LABS");
-#endif
                     _init = true;
-                    SetOffRaidPosition();
                     return;
                 }
 
@@ -154,25 +131,8 @@ namespace r1ft.DynamicTimeCyle
                     if (gameWorld.AllPlayers[0].Location == null)
                         return;
 
-                    if (gameWorld.AllPlayers[0].Location == "factory4_day")
-                    {
-                        _cacheTimeHour = 15;
-                        _cacheTimeMin = 28;
-                    }
-
-                    if (gameWorld.AllPlayers[0].Location == "factory4_night")
-                    {
-                        _cacheTimeHour = 3;
-                        _cacheTimeMin = 28;
-                    }
-
-#if DEBUG
-                    DEBUGMsg($"offraid pos: {_offraidPos}");
-                    DEBUGMsg($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                    DEBUGMsg($"Hideout");
-#endif
+                    DynamicTime.ReturnFactoryTime(gameWorld.AllPlayers[0].Location, out _cacheTimeHour, out _cacheTimeMin);
                     _init = true;
-                    SetOffRaidPosition();
                     return;
                 }
                 return;
@@ -196,19 +156,14 @@ namespace r1ft.DynamicTimeCyle
             var currentDateTime = (DateTime)CalculateTime.Invoke(gameWorld.GameDateTime, null);
             if (!_init && !_hideout)
             {
-                CalculateTimeOffset(out var hourOffset, out var minOffset);
+                DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _offraidPos, _dtcConfig.ToArray(), out var hourOffset, out var minOffset);
                 var modifiedDateTime = currentDateTime.AddHours(hourOffset - currentDateTime.Hour);
                 modifiedDateTime = modifiedDateTime.AddMinutes(minOffset - currentDateTime.Minute);
                 ResetTime.Invoke(gameWorld.GameDateTime, new object[] { modifiedDateTime });
-#if DEBUG
-                DEBUGMsg($"offraid pos: {_offraidPos}");
-                DEBUGMsg($"Time was set to: {modifiedDateTime:HH:mm}");
-#endif
                 currentDateTime = modifiedDateTime;
                 _cacheTimeHour = modifiedDateTime.Hour;
                 _cacheTimeMin = modifiedDateTime.Minute;
                 _init = true;
-                SetOffRaidPosition();
                 return;
             }
 
@@ -216,13 +171,7 @@ namespace r1ft.DynamicTimeCyle
             {
                 _cacheTimeHour = currentDateTime.Hour;
                 _cacheTimeMin = currentDateTime.Minute;
-#if DEBUG
-                DEBUGMsg($"offraid pos: {_offraidPos}");
-                DEBUGMsg($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                DEBUGMsg($"Hideout");
-#endif
                 _init = true;
-                SetOffRaidPosition();
                 return;
             }
 
@@ -231,109 +180,5 @@ namespace r1ft.DynamicTimeCyle
 
             return;
         }
-
-
-        private static void SetOffRaidPosition()
-        {
-            var offraidPos = Reader.GetOffRaidPos(_pttConfigMain, serverlog, out var found);
-            if (_offraidPos == "" || found)
-            {
-                _offraidPos = offraidPos;
-                _hideout = false;
-                foreach (var hideoutposition in _pttConfigMain.hideout_main_stash_access_via)
-                {
-                    DEBUGMsg(hideoutposition);
-                    DEBUGMsg(_offraidPos);
-                    if (hideoutposition != _offraidPos)
-                        continue;
-
-                    _hideout = true;
-                    break;
-                }
-            }
-
-            Writer.WritePersistance(new PTTConfig.Persistance { currentLocation = _offraidPos, currentHour = _cacheTimeHour, currentMin = _cacheTimeMin, hideout = _hideout }, pttpersistance);
-#if DEBUG
-            DEBUGMsg("SAVED PERSISTANCE");
-            DEBUGMsg($"Hour : {_cacheTimeHour}");
-            DEBUGMsg($"Min : {_cacheTimeMin}");
-            DEBUGMsg($"Position : {_offraidPos}");
-            DEBUGMsg($"Hideout : {_hideout}");
-#endif
-            Notifier.DisplayMessageNotification($"Current Raid Time: {(_cacheTimeHour < 10 ? "0" : "")}{string.Format("{0:0,0}", _cacheTimeHour)}:{string.Format("{0:0,0}", _cacheTimeMin)}");
-
-            _outofRaidSave = true;
-
-            return;
-        }
-
-        private static void SetPersistance()
-        {
-            if (!_persistanceinit)
-            {
-                if (_cacheTimeHour == 99 && _cacheTimeMin == 99)
-                {
-                    if (File.Exists(pttpersistance))
-                    {
-                        var persistance = Reader.ReadPersistance(pttpersistance);
-                        if (persistance.currentLocation != "")
-                        {
-                            _cacheTimeHour = persistance.currentHour;
-                            _cacheTimeMin = persistance.currentMin;
-                            _offraidPos = persistance.currentLocation;
-                            _hideout = persistance.hideout;
-#if DEBUG
-                            DEBUGMsg("LOADED PERSISTANCE");
-                            DEBUGMsg($"Hour : {_cacheTimeHour}");
-                            DEBUGMsg($"Min : {_cacheTimeMin}");
-                            DEBUGMsg($"Position : {_offraidPos}");
-                            DEBUGMsg($"Hideout : {_hideout}");
-#endif
-                            return;
-                        }
-                        else
-                        {
-                            SetOffRaidPosition();
-                        }
-                    }
-                }
-                _persistanceinit = true;
-            }
-            return;
-        }
-
-        private static void CalculateTimeOffset(out double hour, out double min)
-        {
-            hour = _cacheTimeHour;
-            min = _cacheTimeMin;
-            if (_offraidPos != "")
-            {
-                var config = _pttConfig.ToArray();
-                foreach (var location in config)
-                {
-                    if (location.OffraidPosition != _offraidPos)
-                        continue;
-
-                    min += location.TravelTime;
-#if DEBUG
-                    DEBUGMsg(min.ToString());
-#endif
-                    break;
-                }
-
-                if (min > 60)
-                {
-                    hour += Mathf.RoundToInt((int)min / 60);
-                    min -= Mathf.RoundToInt((int)min / 60) * 60;
-                }
-            }
-        }
-#if DEBUG
-        private static void DEBUGMsg(string msg)
-        {
-            PreloaderUI.Instance.Console.AddLog(msg, "[DEBUG]");
-            return;
-        }
-#endif
     }
 }
