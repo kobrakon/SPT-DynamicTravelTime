@@ -1,4 +1,4 @@
-Alpha Version Althogh mostly Stable Havent Tested much.
+Beta Version Althogh mostly Stable Havent Tested much.
 
 # Install
 1. Extract Files
