@@ -4,35 +4,35 @@ namespace r1ft.DynamicTimeCyle
 {
     class Network
     {
-        public static PTTConfig.DTCCProfile RetreiveProfile(out bool err, out string pos)
+        private static DTCConfig.DTCCProfile RetreiveProfile(out bool err, out string pos)
         {
             pos = "";
             err = false;
             try
             {
                 var posrequst = Aki.Common.Http.RequestHandler.GetJson("/pttdynamictravel/offraidPosition");
-                var ptt = JsonConvert.DeserializeObject<PTTConfig.PTTProfile>(posrequst);
+                var ptt = JsonConvert.DeserializeObject<DTCConfig.PTTProfile>(posrequst);
                 pos = ptt.offraidPosition;
                 if (pos == "null")
                     err = true;
 
                 var request = Aki.Common.Http.RequestHandler.GetJson("/pttdynamictravel/config");
-                return JsonConvert.DeserializeObject<PTTConfig.DTCCProfile>(request);
+                return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
             }
             catch
             {
                 err = true;
-                return new PTTConfig.DTCCProfile();
+                return new DTCConfig.DTCCProfile();
             }
         }
 
-        public static void WritePersistance(double hour, double min, bool hideout)
+        private static void WritePersistance(double hour, double min, bool hideout)
         {
             Aki.Common.Http.RequestHandler.GetData($"/pttdynamictravel/post/{hour}/{min}/{hideout}");
             return;
         }
 
-        public static bool SetOffRaidPosition(PTTConfig.MainConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
+        public static bool SetOffRaidPosition(DTCConfig.MainConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
         {
             hideout = false;
             hour = inhour;
@@ -58,14 +58,7 @@ namespace r1ft.DynamicTimeCyle
                 break;
             }
 
-            Network.WritePersistance(hour, min, hideout);
-#if DEBUG
-PreloaderUI.Instance.Console.AddLog("SAVED PERSISTANCE", "[DEBUG]");
-PreloaderUI.Instance.Console.AddLog($"Hour : {_cacheTimeHour}", "[DEBUG]");
-PreloaderUI.Instance.Console.AddLog($"Min : {_cacheTimeMin}", "[DEBUG]");
-PreloaderUI.Instance.Console.AddLog($"Position : {_offraidPos}", "[DEBUG]");
-PreloaderUI.Instance.Console.AddLog($"Hideout : {_hideout}", "[DEBUG]");
-#endif
+            WritePersistance(hour, min, hideout);
             return true;
         }
     }

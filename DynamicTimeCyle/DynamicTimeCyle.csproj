@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="DynamicTimeCyleController.cs" />
     <Compile Include="DynamicTimeCyclePlugin.cs" />
-    <Compile Include="Helper\Config.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helper\Network.cs" />
     <Compile Include="Helper\Notifier.cs" />
     <Compile Include="Helper\PTTConfig.cs" />

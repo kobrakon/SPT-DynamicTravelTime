@@ -22,7 +22,7 @@ namespace r1ft.DynamicTimeCyle
         private static double _cacheTimeMin = 99;
         private static bool _hideout = false;
 
-        private static float _waitTime = 30;
+        private static readonly float _waitTime = 30;
         private static float _cacheWait = 0;
         private static float _startWait = 0;
 
@@ -30,8 +30,8 @@ namespace r1ft.DynamicTimeCyle
         private static bool _pttNotInit = false;
         private static bool _firstStart = true;
 
-        private static List<PTTConfig.Locations> _dtcConfig = null;
-        private static PTTConfig.MainConfig _pttConfig = null;
+        private static List<DTCConfig.Locations> _dtcConfig = null;
+        private static DTCConfig.MainConfig _pttConfig = null;
 
         private bool IsTargetMethod(MethodInfo mi)
         {
@@ -52,12 +52,12 @@ namespace r1ft.DynamicTimeCyle
                 return;
 
             if (_dtcConfig == null)
-                _dtcConfig = Config.GetDTCConfig();
+                _dtcConfig = DTCConfig.GetDTCConfig();
 
 
             if (_pttConfig == null)
             {
-                _pttConfig = Config.GetPTTConfig();
+                _pttConfig = DTCConfig.GetPTTConfig();
                 return;
             }
 
@@ -122,11 +122,6 @@ namespace r1ft.DynamicTimeCyle
 
                         DynamicTime.ReturnFactoryTime(gameWorld.AllPlayers[0].Location, out _cacheTimeHour, out _cacheTimeMin);
                     }
-#if DEBUG
-                    DEBUGMsg($"offraid pos: {_offraidPos}");
-                    DEBUGMsg($"Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                    DEBUGMsg("FACTORY OR LABS");
-#endif
                     _init = true;
                     return;
                 }
@@ -137,11 +132,6 @@ namespace r1ft.DynamicTimeCyle
                         return;
 
                     DynamicTime.ReturnFactoryTime(gameWorld.AllPlayers[0].Location, out _cacheTimeHour, out _cacheTimeMin);
-#if DEBUG
-                    DEBUGMsg($"offraid pos: {_offraidPos}");
-                    DEBUGMsg($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                    DEBUGMsg($"Hideout");
-#endif
                     _init = true;
                     return;
                 }
@@ -170,10 +160,6 @@ namespace r1ft.DynamicTimeCyle
                 var modifiedDateTime = currentDateTime.AddHours(hourOffset - currentDateTime.Hour);
                 modifiedDateTime = modifiedDateTime.AddMinutes(minOffset - currentDateTime.Minute);
                 ResetTime.Invoke(gameWorld.GameDateTime, new object[] { modifiedDateTime });
-#if DEBUG
-                DEBUGMsg($"offraid pos: {_offraidPos}");
-                DEBUGMsg($"Time was set to: {modifiedDateTime:HH:mm}");
-#endif
                 currentDateTime = modifiedDateTime;
                 _cacheTimeHour = modifiedDateTime.Hour;
                 _cacheTimeMin = modifiedDateTime.Minute;
@@ -185,11 +171,6 @@ namespace r1ft.DynamicTimeCyle
             {
                 _cacheTimeHour = currentDateTime.Hour;
                 _cacheTimeMin = currentDateTime.Minute;
-#if DEBUG
-                DEBUGMsg($"offraid pos: {_offraidPos}");
-                DEBUGMsg($"Cache Time was set to: {_cacheTimeHour}:{_cacheTimeMin}");
-                DEBUGMsg($"Hideout");
-#endif
                 _init = true;
                 return;
             }

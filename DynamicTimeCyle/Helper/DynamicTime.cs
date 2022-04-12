@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace r1ft.DynamicTimeCyle
 {
@@ -27,7 +22,7 @@ namespace r1ft.DynamicTimeCyle
             }
         }
 
-        public static void ReturnMapTime(double inhour, double inmin, string pos, PTTConfig.Locations[] locations, out double hour, out double min)
+        public static void ReturnMapTime(double inhour, double inmin, string pos, DTCConfig.Locations[] locations, out double hour, out double min)
         {
             hour = inhour;
             min = inmin;
