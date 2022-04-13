@@ -43,6 +43,7 @@ namespace r1ft.DynamicTimeCyle
                     min -= Mathf.RoundToInt((int)min / 60) * 60;
                 }
             }
+            return;
         }
     }
 }
