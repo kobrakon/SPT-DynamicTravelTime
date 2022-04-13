@@ -1,7 +1,7 @@
 "use strict";
 
 const pkg = require("./package.json");
-const PTTDynamicTravelTime = require("./src/PTTDynamicTravelTime.js");
+const PTTDynamicTravelTime = require("./src/src.js");
 
 class PTTDynamicTravelTimeInit
 {

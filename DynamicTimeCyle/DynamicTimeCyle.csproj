@@ -38,8 +38,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <None Include="Resources\r1ft-PTTDynamicTimeCycle\cfg\traveltime.json" />
-    <None Include="Resources\r1ft-PTTDynamicTimeCycle\package.json" />
+    <None Include="Resources\r1ft-DynamicTimeCycle\cfg\config.json" />
+    <None Include="Resources\r1ft-DynamicTimeCycle\package.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicTimeCyleController.cs" />
@@ -47,7 +47,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helper\Network.cs" />
     <Compile Include="Helper\Notifier.cs" />
-    <Compile Include="Helper\PTTConfig.cs" />
+    <Compile Include="Helper\Config.cs" />
     <Compile Include="Helper\DynamicTime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -83,8 +83,8 @@
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\r1ft-PTTDynamicTimeCycle\package.js" />
-    <Content Include="Resources\r1ft-PTTDynamicTimeCycle\src\PTTDynamicTravelTime.js" />
+    <Content Include="Resources\r1ft-DynamicTimeCycle\package.js" />
+    <Content Include="Resources\r1ft-DynamicTimeCycle\src\src.js" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -94,7 +94,7 @@ move $(TargetFileName) ..
 del /Q *
 mkdir BepInEx\plugins
 move ..\$(TargetFileName) .\BepInEx\plugins\
-mkdir user\mods\r1ft-PTTDynamicTimeCycle
-xcopy /s /y ..\..\Resources\r1ft-PTTDynamicTimeCycle user\mods\r1ft-PTTDynamicTimeCycle\</PostBuildEvent>
+mkdir user\mods\r1ft-DynamicTimeCycle
+xcopy /s /y ..\..\Resources\r1ft-DynamicTimeCycle user\mods\r1ft-DynamicTimeCycle\</PostBuildEvent>
   </PropertyGroup>
 </Project>

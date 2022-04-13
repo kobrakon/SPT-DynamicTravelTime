@@ -22,7 +22,7 @@ namespace r1ft.DynamicTimeCyle
             }
         }
 
-        public static void ReturnMapTime(double inhour, double inmin, string pos, DTCConfig.Locations[] locations, out double hour, out double min)
+        public static void ReturnMapTime(double inhour, double inmin, string pos, Config.Locations[] locations, out double hour, out double min)
         {
             hour = inhour;
             min = inmin;
@@ -43,6 +43,7 @@ namespace r1ft.DynamicTimeCyle
                     min -= Mathf.RoundToInt((int)min / 60) * 60;
                 }
             }
+            return;
         }
     }
 }

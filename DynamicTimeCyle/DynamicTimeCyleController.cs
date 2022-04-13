@@ -20,7 +20,6 @@ namespace r1ft.DynamicTimeCyle
         private static string _offraidPos = "";
         private static double _cacheTimeHour = 99;
         private static double _cacheTimeMin = 99;
-        private static bool _hideout = false;
 
         private static readonly float _waitTime = 30;
         private static float _cacheWait = 0;
@@ -29,9 +28,11 @@ namespace r1ft.DynamicTimeCyle
         private static bool _init = true;
         private static bool _pttNotInit = false;
         private static bool _firstStart = true;
+        private static bool _hideout = false;
+        private static bool _pttEnabled = false;
 
-        private static List<DTCConfig.Locations> _dtcConfig = null;
-        private static DTCConfig.MainConfig _pttConfig = null;
+        private static List<Config.Locations> _dtcConfig = null;
+        private static Config.PTTConfig _pttConfig = null;
 
         private bool IsTargetMethod(MethodInfo mi)
         {
@@ -52,24 +53,26 @@ namespace r1ft.DynamicTimeCyle
                 return;
 
             if (_dtcConfig == null)
-                _dtcConfig = DTCConfig.GetDTCConfig();
+                _dtcConfig = Config.GetDTCConfig(out _pttEnabled);
 
-
-            if (_pttConfig == null)
+            if (_pttEnabled)
             {
-                _pttConfig = DTCConfig.GetPTTConfig();
-                return;
-            }
+                if (_pttConfig == null)
+                {
+                    _pttConfig = Config.GetPTTConfig();
+                    return;
+                }
 
-            if (_pttNotInit)
-            {
-                if (_cacheWait == 0)
-                    _cacheWait = Time.time + _waitTime;                
+                if (_pttNotInit)
+                {
+                    if (_cacheWait == 0)
+                        _cacheWait = Time.time + _waitTime;
 
-                if (Time.time > _cacheWait)
-                    _pttNotInit = false;
+                    if (Time.time > _cacheWait)
+                        _pttNotInit = false;
 
-                return;
+                    return;
+                }
             }
 
             if (_firstStart)
@@ -88,7 +91,7 @@ namespace r1ft.DynamicTimeCyle
             {
                 if (_init)
                 {
-                    _pttNotInit = !Network.SetOffRaidPosition(_pttConfig, _cacheTimeHour, _cacheTimeMin, out _offraidPos, out _cacheTimeHour, out _cacheTimeMin, out _hideout);
+                    _pttNotInit = !Network.SetOffRaidPosition(_pttEnabled, _pttConfig, _cacheTimeHour, _cacheTimeMin, out _offraidPos, out _cacheTimeHour, out _cacheTimeMin, out _hideout);
                     if (_pttNotInit)
                         return;
 
@@ -112,9 +115,7 @@ namespace r1ft.DynamicTimeCyle
                 if (!_init && !_hideout)
                 {
                     if (_cacheTimeHour != 99 && _cacheTimeMin != 99)
-                    {
-                        DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _offraidPos, _dtcConfig.ToArray(), out _cacheTimeHour, out _cacheTimeMin);
-                    }
+                        DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _pttEnabled ? _offraidPos : gameWorld.AllPlayers[0].Location, _dtcConfig.ToArray(), out _cacheTimeHour, out _cacheTimeMin);         
                     else
                     {
                         if (gameWorld.AllPlayers[0].Location == null)
@@ -156,7 +157,7 @@ namespace r1ft.DynamicTimeCyle
             var currentDateTime = (DateTime)CalculateTime.Invoke(gameWorld.GameDateTime, null);
             if (!_init && !_hideout)
             {
-                DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _offraidPos, _dtcConfig.ToArray(), out var hourOffset, out var minOffset);
+                DynamicTime.ReturnMapTime(_cacheTimeHour, _cacheTimeMin, _pttEnabled ? _offraidPos : gameWorld.AllPlayers[0].Location, _dtcConfig.ToArray(), out var hourOffset, out var minOffset);
                 var modifiedDateTime = currentDateTime.AddHours(hourOffset - currentDateTime.Hour);
                 modifiedDateTime = modifiedDateTime.AddMinutes(minOffset - currentDateTime.Minute);
                 ResetTime.Invoke(gameWorld.GameDateTime, new object[] { modifiedDateTime });
