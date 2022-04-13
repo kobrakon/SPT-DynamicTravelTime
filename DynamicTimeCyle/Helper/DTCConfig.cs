@@ -51,12 +51,19 @@ namespace r1ft.DynamicTimeCyle
 
             var config = JsonConvert.DeserializeObject<DTCMainConfig>(jsonstring);
             pttenabled = config.PTTEnabled;
-
-            var locations = config.Locations;
             var list = new List<Locations>();
-
-            foreach (var option in locations)
-                list.Add(option);
+            if (pttenabled)
+            {
+                var locations = config.LocationsPTT;           
+                foreach (var option in locations)
+                    list.Add(option);
+            }
+            else
+            {
+                var locations = config.Locations;
+                foreach (var option in locations)
+                    list.Add(option);
+            }
 
             return list;
         }
@@ -66,6 +73,7 @@ namespace r1ft.DynamicTimeCyle
         {
             public bool PTTEnabled { get; set; }
             public Locations[] Locations { get; set; }
+            public Locations[] LocationsPTT { get; set; }
         }
 
         public class Locations

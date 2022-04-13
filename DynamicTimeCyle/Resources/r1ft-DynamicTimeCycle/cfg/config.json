@@ -2,6 +2,44 @@
   "PTT Enabled": true,
   "Locations": [
     {
+      "OffraidPosition": "factory4_day",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "factory4_night",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "bigmap",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "interchange",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "laboratory",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "lighthouse",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "rezervbase",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "shoreline",
+      "TravelTime": 60
+    },
+    {
+      "OffraidPosition": "woods",
+      "TravelTime": 60
+    }
+  ],
+  "LocationsPTT": [
+    {
       "OffraidPosition": "LighthouseReservePath",
       "TravelTime": 60
     },
