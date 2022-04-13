@@ -1,6 +1,7 @@
 "use strict";
 
 const config = require("../cfg/config.json")
+var isDead = false;
 
 function removeQuotesMark(str) {
     return str.replace(/^\"/g, "")
@@ -47,6 +48,10 @@ class DynamicTimeCycle {
             };
         }
 
+        HttpRouter.onStaticRoute["/dynamictimecycle/deathcount"] = {
+            config: DynamicTimeCycle.onRequestdeath.bind(this)
+        };
+
         HttpRouter.onStaticRoute["/dynamictimecycle/ptt"] = {
             config: DynamicTimeCycle.onRequestptt.bind(this)
         };
@@ -58,12 +63,38 @@ class DynamicTimeCycle {
         HttpRouter.onDynamicRoute["/dynamictimecycle/post/"] = {
             postconfig: DynamicTimeCycle.onRequesPostConfig.bind(this)
         };
+
+    }
+
+    static onRequestdeath(url, info, sessionID) {
+        var profile = SaveServer.profiles[sessionID];
+        var stats = profile.characters.pmc.Stats;
+        var deaths = 0;
+        if (stats) {
+            if (stats.SessionCounters) {
+                if (stats.SessionCounters.Items) {
+                    let len = stats.SessionCounters.Items.length;
+                    for (let i = 0; i < len; i++) {
+                        let keylen = stats.SessionCounters.Items[i].Key.length
+                        for (let k = 0; k < keylen; k++) {
+                            if (stats.SessionCounters.Items[i].Key[k] == "Deaths") {
+                                deaths = stats.SessionCounters.Items[i].Value;
+                                Logger.info("=> Dynamic Time Cycle : Deaths " + deaths);
+                                return HttpResponse.noBody(deaths);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Logger.info("=> Dynamic Time Cycle : No Session Data");
+        return HttpResponse.noBody(deaths);
     }
 
     static onRequestConfig(url, info, sessionID) {
         var profile = SaveServer.profiles[sessionID];
         if (profile.DynamicTimeCycle == null) {
-            Logger.info("=> Dynamic Time Cycle : Creating Profile");
             profile.DynamicTimeCycle = {};
             profile.DynamicTimeCycle.hour = 99;
             profile.DynamicTimeCycle.min = 99;
