@@ -47,7 +47,7 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helper\Network.cs" />
     <Compile Include="Helper\Notifier.cs" />
-    <Compile Include="Helper\DTCConfig.cs" />
+    <Compile Include="Helper\Config.cs" />
     <Compile Include="Helper\DynamicTime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,12 +1,13 @@
 ﻿using Comfort.Common;
 using EFT;
+using EFT.UI;
 using Newtonsoft.Json;
 
 namespace r1ft.DynamicTimeCyle
 {
     class Network
     {
-        private static DTCConfig.DTCCProfile RetreiveProfile(bool pttEnabled, out bool err, out string pos)
+        private static Config.DTCProfile RetreiveProfile(bool pttEnabled, out bool err, out string pos)
         {
             pos = "";
             err = false;
@@ -15,13 +16,13 @@ namespace r1ft.DynamicTimeCyle
                 if (pttEnabled)
                 {
                     var posrequst = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/offraidPosition");
-                    var ptt = JsonConvert.DeserializeObject<DTCConfig.PTTProfile>(posrequst);
+                    var ptt = JsonConvert.DeserializeObject<Config.PTTProfile>(posrequst);
                     pos = ptt.offraidPosition;
                     if (pos == "null")
                         err = true;
 
                     var request = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/config");
-                    return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
+                    return JsonConvert.DeserializeObject<Config.DTCProfile>(request);
                 }
                 else
                 {
@@ -38,13 +39,13 @@ namespace r1ft.DynamicTimeCyle
                         }
                     }
                     var request = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/config");
-                    return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
+                    return JsonConvert.DeserializeObject<Config.DTCProfile>(request);
                 }
             }
             catch
             {
                 err = true;
-                return new DTCConfig.DTCCProfile();
+                return new Config.DTCProfile();
             }
         }
 
@@ -54,7 +55,14 @@ namespace r1ft.DynamicTimeCyle
             return;
         }
 
-        public static bool SetOffRaidPosition(bool pttEnabled, DTCConfig.PTTConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
+        public static bool GetPttAvailiable()
+        {
+            var data = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/ptt");
+            PreloaderUI.Instance.Console.AddLog($"{data}", "");
+            return bool.Parse(data.ToString());
+        }
+
+        public static bool SetOffRaidPosition(bool pttEnabled, Config.PTTConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
         {
             if (pttEnabled)
             {

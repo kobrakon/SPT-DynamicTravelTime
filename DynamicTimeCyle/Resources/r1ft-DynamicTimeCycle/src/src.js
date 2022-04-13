@@ -1,8 +1,6 @@
 "use strict";
 
-function removeByteOrderMark(str) {
-    return str.replace(/^\ufeff/g, "")
-}
+const config = require("../cfg/config.json")
 
 function removeQuotesMark(str) {
     return str.replace(/^\"/g, "")
@@ -11,36 +9,46 @@ function removeQuotesMark(str) {
 function getFactory(sessionID) {
     var profile = SaveServer.profiles[sessionID];
     var hideout = profile.DynamicTimeCycle.hideout;
-    var hour = removeQuotesMark(hideout);
-
-    if (hideout == "false") {
-        if (hour > 5 && hour < 19) {
-            Logger.info("=> PTT Dynamic Time Cycle : Factory Night Locked");
-            DatabaseServer.tables.locations.factory4_night.base.Locked = true;
-            DatabaseServer.tables.locations.factory4_day.base.Locked = false;
+    var hour = removeQuotesMark(profile.DynamicTimeCycle.hour);
+    if (!DatabaseServer.tables.locations.factory4_night.base.Locked || !DatabaseServer.tables.locations.factory4_day.base.Locked) {
+        if (hideout == "false") {
+            if (hour > 5 && hour < 19) {
+                Logger.info("=> Dynamic Time Cycle : Factory Night Locked");
+                DatabaseServer.tables.locations.factory4_night.base.Locked = true;
+                DatabaseServer.tables.locations.factory4_day.base.Locked = false;
+            }
+            else {
+                Logger.info("=> Dynamic Time Cycle : Factory Day Locked");
+                DatabaseServer.tables.locations.factory4_night.base.Locked = false;
+                DatabaseServer.tables.locations.factory4_day.base.Locked = true;
+            }
         }
         else {
-            Logger.info("=> PTT Dynamic Time Cycle : Factory Day Locked");
+            Logger.info("=> Dynamic Time Cycle : Factory Unocked");
             DatabaseServer.tables.locations.factory4_night.base.Locked = false;
-            DatabaseServer.tables.locations.factory4_day.base.Locked = true;
+            DatabaseServer.tables.locations.factory4_day.base.Locked = false;
         }
-    }
-    else {
-        Logger.info("=> PTT Dynamic Time Cycle : Factory Unocked");
-        DatabaseServer.tables.locations.factory4_night.base.Locked = false;
-        DatabaseServer.tables.locations.factory4_day.base.Locked = false;
     }
 }
 
 class DynamicTimeCycle {
     static onLoadMod() {
-        if (!globalThis.PathToTarkovAPI) {
-            Logger.error(`=> ${this.modName}: PathToTarkovAPI not found, are you sure a version of PathToTarkov >= 2.5.0 is installed ?`);
-            return;
+        var pttEnabled = config.PTTEnabled
+        if (pttEnabled) {
+            if (!globalThis.PathToTarkovAPI) {
+                Logger.error(`=> Dynamic Time Cycle: PathToTarkovAPI not found Disabling PTT Options`);
+                pttEnabled = false;
+            }
         }
 
-        HttpRouter.onStaticRoute["/dynamictimecycle/offraidPosition"] = {
-            config: DynamicTimeCycle.onRequestPosition.bind(this)
+        if (pttEnabled) {
+            HttpRouter.onStaticRoute["/dynamictimecycle/offraidPosition"] = {
+                config: DynamicTimeCycle.onRequestPosition.bind(this)
+            };
+        }
+
+        HttpRouter.onStaticRoute["/dynamictimecycle/ptt"] = {
+            config: DynamicTimeCycle.onRequestptt.bind(this)
         };
 
         HttpRouter.onStaticRoute["/dynamictimecycle/config"] = {
@@ -55,13 +63,26 @@ class DynamicTimeCycle {
     static onRequestConfig(url, info, sessionID) {
         var profile = SaveServer.profiles[sessionID];
         if (profile.DynamicTimeCycle == null) {
+            Logger.info("=> Dynamic Time Cycle : Creating Profile");
             profile.DynamicTimeCycle = {};
             profile.DynamicTimeCycle.hour = 99;
             profile.DynamicTimeCycle.min = 99;
             profile.DynamicTimeCycle.hideout = true;
         }
 
+        Logger.info("=> Dynamic Time Cycle : Returning Config");
         return HttpResponse.noBody(SaveServer.profiles[sessionID].DynamicTimeCycle);
+    }
+
+    static onRequestptt(url, info, sessionID) {
+        var profile = SaveServer.profiles[sessionID];
+        if (profile.PathToTarkov == null) {
+            Logger.info("=> Dynamic Time Cycle : PTT Not Available");
+            return HttpResponse.noBody(false);
+        }
+
+        Logger.info("=> Dynamic Time Cycle : PTT Available");
+        return HttpResponse.noBody(true);
     }
 
     static onRequestPosition(url, info, sessionID) {
@@ -72,6 +93,7 @@ class DynamicTimeCycle {
             profile.PathToTarkov.offraidPosition = "null";
         }
 
+        Logger.info("=> Dynamic Time Cycle : Returning PTT Config");
         return HttpResponse.noBody(SaveServer.profiles[sessionID].PathToTarkov);
     }
 
@@ -85,6 +107,7 @@ class DynamicTimeCycle {
 
         getFactory(sessionID);
 
+        Logger.info("=> Dynamic Time Cycle : Updating Config");
         return HttpResponse.noBody(SaveServer.profiles[sessionID].DynamicTimeCycle);
     }
 }
