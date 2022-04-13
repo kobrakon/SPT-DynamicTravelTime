@@ -7,10 +7,10 @@ namespace r1ft.DynamicTimeCyle
 {
     class DTCConfig
     {
-        private static readonly string _dtcconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\r1ft-PTTDynamicTimeCycle\\cfg\\traveltime.json");
+        private static readonly string _dtcconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\r1ft-DynamicTimeCycle\\cfg\\config.json");
         private static readonly string _pttconfig = Path.Combine(Application.dataPath, "..\\user\\mods\\ZTrap-PathToTarkov\\config\\config.json");
 
-        public static MainConfig GetPTTConfig()
+        public static PTTConfig GetPTTConfig()
         {
             System.IO.FileStream f_pttconfig = new System.IO.FileStream(_pttconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
 
@@ -28,10 +28,10 @@ namespace r1ft.DynamicTimeCyle
                 jsonstring += line.Trim();
             }
 
-            return JsonConvert.DeserializeObject<MainConfig>(jsonstring);
+            return JsonConvert.DeserializeObject<PTTConfig>(jsonstring);
         }
 
-        public static List<Locations> GetDTCConfig()
+        public static List<Locations> GetDTCConfig(out bool pttenabled)
         {
             System.IO.FileStream f_pttconfig = new System.IO.FileStream(_dtcconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
 
@@ -49,13 +49,23 @@ namespace r1ft.DynamicTimeCyle
                 jsonstring += line.Trim();
             }
 
-            var config = JsonConvert.DeserializeObject<Locations[]>(jsonstring);
+            var config = JsonConvert.DeserializeObject<DTCMainConfig>(jsonstring);
+            pttenabled = config.PTTEnabled;
+
+            var locations = config.Locations;
             var list = new List<Locations>();
 
-            foreach (var option in config)
+            foreach (var option in locations)
                 list.Add(option);
 
             return list;
+        }
+
+
+        public class DTCMainConfig
+        {
+            public bool PTTEnabled { get; set; }
+            public Locations[] Locations { get; set; }
         }
 
         public class Locations
@@ -77,7 +87,7 @@ namespace r1ft.DynamicTimeCyle
             public bool hideout { get; set; }
         }
 
-        public class MainConfig
+        public class PTTConfig
         {
             public bool enabled { get; set; }
             public string initial_offraid_position { get; set; }

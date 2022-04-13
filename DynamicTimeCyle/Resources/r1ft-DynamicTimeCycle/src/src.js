@@ -10,8 +10,8 @@ function removeQuotesMark(str) {
 
 function getFactory(sessionID) {
     var profile = SaveServer.profiles[sessionID];
-    var hideout = profile.PTTDynamicTravelTime.hideout;
-    var hour = removeQuotesMark(profile.PTTDynamicTravelTime.hour);
+    var hideout = profile.DynamicTimeCycle.hideout;
+    var hour = removeQuotesMark(hideout);
 
     if (hideout == "false") {
         if (hour > 5 && hour < 19) {
@@ -32,36 +32,36 @@ function getFactory(sessionID) {
     }
 }
 
-class PTTDynamicTravelTime {
+class DynamicTimeCycle {
     static onLoadMod() {
         if (!globalThis.PathToTarkovAPI) {
             Logger.error(`=> ${this.modName}: PathToTarkovAPI not found, are you sure a version of PathToTarkov >= 2.5.0 is installed ?`);
             return;
         }
 
-        HttpRouter.onStaticRoute["/pttdynamictravel/offraidPosition"] = {
-            config: PTTDynamicTravelTime.onRequestPosition.bind(this)
+        HttpRouter.onStaticRoute["/dynamictimecycle/offraidPosition"] = {
+            config: DynamicTimeCycle.onRequestPosition.bind(this)
         };
 
-        HttpRouter.onStaticRoute["/pttdynamictravel/config"] = {
-            config: PTTDynamicTravelTime.onRequestConfig.bind(this)
+        HttpRouter.onStaticRoute["/dynamictimecycle/config"] = {
+            config: DynamicTimeCycle.onRequestConfig.bind(this)
         };
 
-        HttpRouter.onDynamicRoute["/pttdynamictravel/post/"] = {
-            postconfig: PTTDynamicTravelTime.onRequesPostConfig.bind(this)
+        HttpRouter.onDynamicRoute["/dynamictimecycle/post/"] = {
+            postconfig: DynamicTimeCycle.onRequesPostConfig.bind(this)
         };
     }
 
     static onRequestConfig(url, info, sessionID) {
         var profile = SaveServer.profiles[sessionID];
-        if (profile.PTTDynamicTravelTime == null) {
-            profile.PTTDynamicTravelTime = {};
-            profile.PTTDynamicTravelTime.hour = 99;
-            profile.PTTDynamicTravelTime.min = 99;
-            profile.PTTDynamicTravelTime.hideout = true;
+        if (profile.DynamicTimeCycle == null) {
+            profile.DynamicTimeCycle = {};
+            profile.DynamicTimeCycle.hour = 99;
+            profile.DynamicTimeCycle.min = 99;
+            profile.DynamicTimeCycle.hideout = true;
         }
 
-        return HttpResponse.noBody(SaveServer.profiles[sessionID].PTTDynamicTravelTime);
+        return HttpResponse.noBody(SaveServer.profiles[sessionID].DynamicTimeCycle);
     }
 
     static onRequestPosition(url, info, sessionID) {
@@ -79,14 +79,14 @@ class PTTDynamicTravelTime {
         var profile = SaveServer.profiles[sessionID];
         const splittedUrl = url.split("/");
 
-        profile.PTTDynamicTravelTime.hour = splittedUrl[splittedUrl.length - 3].toLowerCase();
-        profile.PTTDynamicTravelTime.min = splittedUrl[splittedUrl.length - 2].toLowerCase();
-        profile.PTTDynamicTravelTime.hideout = splittedUrl[splittedUrl.length - 1].toLowerCase();
+        profile.DynamicTimeCycle.hour = splittedUrl[splittedUrl.length - 3].toLowerCase();
+        profile.DynamicTimeCycle.min = splittedUrl[splittedUrl.length - 2].toLowerCase();
+        profile.DynamicTimeCycle.hideout = splittedUrl[splittedUrl.length - 1].toLowerCase();
 
         getFactory(sessionID);
 
-        return HttpResponse.noBody(SaveServer.profiles[sessionID].PTTDynamicTravelTime);
+        return HttpResponse.noBody(SaveServer.profiles[sessionID].DynamicTimeCycle);
     }
 }
 
-module.exports = PTTDynamicTravelTime;
+module.exports = DynamicTimeCycle;

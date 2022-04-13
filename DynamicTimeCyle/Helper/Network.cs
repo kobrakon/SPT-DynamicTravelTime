@@ -1,23 +1,45 @@
-﻿using Newtonsoft.Json;
+﻿using Comfort.Common;
+using EFT;
+using Newtonsoft.Json;
 
 namespace r1ft.DynamicTimeCyle
 {
     class Network
     {
-        private static DTCConfig.DTCCProfile RetreiveProfile(out bool err, out string pos)
+        private static DTCConfig.DTCCProfile RetreiveProfile(bool pttEnabled, out bool err, out string pos)
         {
             pos = "";
             err = false;
             try
             {
-                var posrequst = Aki.Common.Http.RequestHandler.GetJson("/pttdynamictravel/offraidPosition");
-                var ptt = JsonConvert.DeserializeObject<DTCConfig.PTTProfile>(posrequst);
-                pos = ptt.offraidPosition;
-                if (pos == "null")
-                    err = true;
+                if (pttEnabled)
+                {
+                    var posrequst = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/offraidPosition");
+                    var ptt = JsonConvert.DeserializeObject<DTCConfig.PTTProfile>(posrequst);
+                    pos = ptt.offraidPosition;
+                    if (pos == "null")
+                        err = true;
 
-                var request = Aki.Common.Http.RequestHandler.GetJson("/pttdynamictravel/config");
-                return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
+                    var request = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/config");
+                    return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
+                }
+                else
+                {
+                    var gameWorld = Singleton<GameWorld>.Instance;
+                    if (gameWorld != null)
+                    {
+                        if (gameWorld.AllPlayers != null)
+                        {
+
+                            if (gameWorld.AllPlayers.Count != 0)
+                            {
+                                pos = gameWorld.AllPlayers[0].Location;
+                            }
+                        }
+                    }
+                    var request = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/config");
+                    return JsonConvert.DeserializeObject<DTCConfig.DTCCProfile>(request);
+                }
             }
             catch
             {
@@ -28,38 +50,60 @@ namespace r1ft.DynamicTimeCyle
 
         private static void WritePersistance(double hour, double min, bool hideout)
         {
-            Aki.Common.Http.RequestHandler.GetData($"/pttdynamictravel/post/{hour}/{min}/{hideout}");
+            Aki.Common.Http.RequestHandler.GetData($"/dynamictimecycle/post/{hour}/{min}/{hideout}");
             return;
         }
 
-        public static bool SetOffRaidPosition(DTCConfig.MainConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
+        public static bool SetOffRaidPosition(bool pttEnabled, DTCConfig.PTTConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
         {
-            hideout = false;
-            hour = inhour;
-            min = inmin;
-            var config = Network.RetreiveProfile(out var err, out pos);
-            if (err)
-                return false;
-
-            if (inhour == 99)
+            if (pttEnabled)
             {
-                hideout = config.hideout;
-                hour = config.hour;
-                min = config.min;
+                hideout = false;
+                hour = inhour;
+                min = inmin;
+                var config = RetreiveProfile(pttEnabled, out var err, out pos);
+                if (err)
+                    return false;
+
+                if (inhour == 99)
+                {
+                    hideout = config.hideout;
+                    hour = config.hour;
+                    min = config.min;
+                }
+
+
+                foreach (var hideoutposition in main.hideout_main_stash_access_via)
+                {
+                    if (hideoutposition != pos)
+                        continue;
+
+                    hideout = true;
+                    break;
+                }
+
+                WritePersistance(hour, min, hideout);
+                return true;
             }
-
-
-            foreach (var hideoutposition in main.hideout_main_stash_access_via)
+            else
             {
-                if (hideoutposition != pos)
-                    continue;
+                hideout = false;
+                hour = inhour;
+                min = inmin;
+                var config = RetreiveProfile(pttEnabled, out var err, out pos);
+                if (err)
+                    return false;
 
-                hideout = true;
-                break;
+                if (inhour == 99)
+                {
+                    hideout = config.hideout;
+                    hour = config.hour;
+                    min = config.min;
+                }
+
+                WritePersistance(hour, min, hideout);
+                return true;
             }
-
-            WritePersistance(hour, min, hideout);
-            return true;
         }
     }
 }
