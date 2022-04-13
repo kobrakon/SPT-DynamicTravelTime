@@ -94,7 +94,7 @@ move $(TargetFileName) ..
 del /Q *
 mkdir BepInEx\plugins
 move ..\$(TargetFileName) .\BepInEx\plugins\
-mkdir user\mods\r1ft-PTTDynamicTimeCycle
-xcopy /s /y ..\..\Resources\r1ft-PTTDynamicTimeCycle user\mods\r1ft-PTTDynamicTimeCycle\</PostBuildEvent>
+mkdir user\mods\r1ft-DynamicTimeCycle
+xcopy /s /y ..\..\Resources\r1ft-DynamicTimeCycle user\mods\r1ft-DynamicTimeCycle\</PostBuildEvent>
   </PropertyGroup>
 </Project>
