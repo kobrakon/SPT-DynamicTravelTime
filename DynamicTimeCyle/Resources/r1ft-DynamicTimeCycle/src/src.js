@@ -49,11 +49,11 @@ class DynamicTimeCycle {
         }
 
         HttpRouter.onStaticRoute["/dynamictimecycle/deathcount"] = {
-            config: DynamicTimeCycle.onRequestdeath.bind(this)
+            config: DynamicTimeCycle.onRequestDeath.bind(this)
         };
 
         HttpRouter.onStaticRoute["/dynamictimecycle/ptt"] = {
-            config: DynamicTimeCycle.onRequestptt.bind(this)
+            config: DynamicTimeCycle.onRequestPTT.bind(this)
         };
 
         HttpRouter.onStaticRoute["/dynamictimecycle/config"] = {
@@ -66,7 +66,7 @@ class DynamicTimeCycle {
 
     }
 
-    static onRequestdeath(url, info, sessionID) {
+    static onRequestDeath(url, info, sessionID) {
         var profile = SaveServer.profiles[sessionID];
         var stats = profile.characters.pmc.Stats;
         var deaths = 0;
@@ -105,7 +105,7 @@ class DynamicTimeCycle {
         return HttpResponse.noBody(SaveServer.profiles[sessionID].DynamicTimeCycle);
     }
 
-    static onRequestptt(url, info, sessionID) {
+    static onRequestPTT(url, info, sessionID) {
         var profile = SaveServer.profiles[sessionID];
         if (profile.PathToTarkov == null) {
             Logger.info("=> Dynamic Time Cycle : PTT Not Available");
