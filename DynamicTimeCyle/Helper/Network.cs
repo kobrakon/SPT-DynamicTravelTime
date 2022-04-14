@@ -7,6 +7,8 @@ namespace r1ft.DynamicTimeCyle
 {
     class Network
     {
+        private static int _deathCount = 0;
+
         private static Config.DTCProfile RetreiveProfile(bool pttEnabled, out bool err, out string pos)
         {
             pos = "";
@@ -31,7 +33,6 @@ namespace r1ft.DynamicTimeCyle
                     {
                         if (gameWorld.AllPlayers != null)
                         {
-
                             if (gameWorld.AllPlayers.Count != 0)
                             {
                                 pos = gameWorld.AllPlayers[0].Location;
@@ -58,8 +59,13 @@ namespace r1ft.DynamicTimeCyle
         public static bool GetPttAvailiable()
         {
             var data = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/ptt");
-            PreloaderUI.Instance.Console.AddLog($"{data}", "");
             return bool.Parse(data.ToString());
+        }
+
+        public static int GetDeathCount()
+        {
+            var data = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/deathcount");
+            return int.Parse(data.ToString());
         }
 
         public static bool SetOffRaidPosition(bool pttEnabled, Config.PTTConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
@@ -104,9 +110,20 @@ namespace r1ft.DynamicTimeCyle
 
                 if (inhour == 99)
                 {
-                    hideout = config.hideout;
+                    if (config.hour == 99)
+                        hideout = true;
+                    else
+                        hideout = config.hideout;
+
                     hour = config.hour;
                     min = config.min;
+                }
+
+                var deathcount = GetDeathCount();
+                if (_deathCount < deathcount)
+                {
+                    _deathCount = deathcount;
+                    hideout = true;
                 }
 
                 WritePersistance(hour, min, hideout);

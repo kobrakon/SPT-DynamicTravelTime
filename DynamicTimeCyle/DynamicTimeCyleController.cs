@@ -95,7 +95,7 @@ namespace r1ft.DynamicTimeCyle
                     if (_pttNotInit)
                         return;
 
-                    Notifier.DrawCurrentTime(_hideout, _cacheTimeHour, _cacheTimeMin);
+                    Notifier.DrawCurrentTime(_pttEnabled, _hideout, _cacheTimeHour, _cacheTimeMin);
                     _init = false;
                 }
                 return;
@@ -136,6 +136,7 @@ namespace r1ft.DynamicTimeCyle
                     _init = true;
                     return;
                 }
+
                 return;
             }
 

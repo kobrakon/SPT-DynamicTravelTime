@@ -21,10 +21,15 @@ namespace r1ft.DynamicTimeCyle
 			notifierMessageMethod.Invoke(null, new object[] { message, ENotificationDurationType.Infinite, ENotificationIconType.Hideout, color });
         }
 
-		public static void DrawCurrentTime(bool hideout, double hour, double min)
+		public static void DrawCurrentTime(bool pttenabled, bool hideout, double hour, double min)
 		{
 			if (hideout || hour == 99)
-				DisplayMessageNotification($"Hideout", Color.white);
+			{
+				if (pttenabled)
+					DisplayMessageNotification($"Hideout", Color.white);
+				else
+					DisplayMessageNotification($"You Died - Raid Time Reset", Color.red);
+			}
 			else
 				DisplayMessageNotification($"Current Raid Time: {(hour < 10 ? "0" : "")}{string.Format("{0:0,0}", hour)}:{string.Format("{0:0,0}", min)}", Color.white);
 
