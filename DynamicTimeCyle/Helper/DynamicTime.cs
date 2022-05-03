@@ -34,6 +34,7 @@ namespace r1ft.DynamicTimeCyle
                         continue;
 
                     min += location.TravelTime;
+
                     break;
                 }
 
@@ -41,6 +42,9 @@ namespace r1ft.DynamicTimeCyle
                 {
                     hour += Mathf.RoundToInt((int)min / 60);
                     min -= Mathf.RoundToInt((int)min / 60) * 60;
+
+                    if (hour > 24)
+                        hour -= 24;
                 }
             }
             return;

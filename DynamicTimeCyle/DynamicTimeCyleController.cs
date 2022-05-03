@@ -20,16 +20,14 @@ namespace r1ft.DynamicTimeCyle
         private static string _offraidPos = "";
         private static double _cacheTimeHour = 99;
         private static double _cacheTimeMin = 99;
-
-        private static readonly float _waitTime = 30;
-        private static float _cacheWait = 0;
-        private static float _startWait = 0;
+        private static double _nightTimeAccelTime = 0;
 
         private static bool _init = true;
         private static bool _pttNotInit = false;
         private static bool _firstStart = true;
         private static bool _hideout = false;
         private static bool _pttEnabled = false;
+        private static bool _nightTimeAccel = false;
 
         private static List<Config.Locations> _dtcConfig = null;
         private static Config.PTTConfig _pttConfig = null;
@@ -52,38 +50,19 @@ namespace r1ft.DynamicTimeCyle
             if (!PreloaderUI.Instance.CanShowErrorScreen)
                 return;
 
-            if (_dtcConfig == null)
-                _dtcConfig = Config.GetDTCConfig(out _pttEnabled);
-
-            if (_pttEnabled)
-            {
-                if (_pttConfig == null)
-                {
-                    _pttConfig = Config.GetPTTConfig();
-                    return;
-                }
-
-                if (_pttNotInit)
-                {
-                    if (_cacheWait == 0)
-                        _cacheWait = Time.time + _waitTime;
-
-                    if (Time.time > _cacheWait)
-                        _pttNotInit = false;
-
-                    return;
-                }
-            }
-
             if (_firstStart)
             {
-                if (_startWait == 0)
-                    _startWait = Time.time + _waitTime;
+                if (!PreloaderUI.Instance.MenuTaskBar.isActiveAndEnabled)
+                    return;
 
-                if (Time.time > _startWait)
+                _dtcConfig = Config.GetDTCConfig(out _pttEnabled, out _nightTimeAccel, out _nightTimeAccelTime);
+
+                if (_pttEnabled)
                 {
-                    _firstStart = false;
+                    _pttConfig = Config.GetPTTConfig();
                 }
+
+                _firstStart = false;
             }
 
             gameWorld = Singleton<GameWorld>.Instance;
@@ -91,7 +70,7 @@ namespace r1ft.DynamicTimeCyle
             {
                 if (_init)
                 {
-                    _pttNotInit = !Network.SetOffRaidPosition(_pttEnabled, _pttConfig, _cacheTimeHour, _cacheTimeMin, out _offraidPos, out _cacheTimeHour, out _cacheTimeMin, out _hideout);
+                    _pttNotInit = !Network.SetOffRaidPosition(_pttEnabled, _pttConfig, _cacheTimeHour, _cacheTimeMin, _nightTimeAccel, _nightTimeAccelTime, out _offraidPos, out _cacheTimeHour, out _cacheTimeMin, out _hideout);
                     if (_pttNotInit)
                         return;
 

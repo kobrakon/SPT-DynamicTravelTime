@@ -29,3 +29,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~P:r1ft.DynamicTimeCyle.Config.PTTConfig.traders_config")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~P:r1ft.DynamicTimeCyle.Config.PTTProfile.mainStashId")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~P:r1ft.DynamicTimeCyle.Config.PTTProfile.offraidPosition")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "member", Target = "~P:r1ft.DynamicTimeCyle.Config.PTTConfig.workbench_always_enabled")]

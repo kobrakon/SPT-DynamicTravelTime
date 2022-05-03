@@ -13,6 +13,8 @@ namespace r1ft.DynamicTimeCyle
         public class DTCConfig
         {
             public bool PTTEnabled { get; set; }
+            public bool NightTimeAccel { get; set; }
+            public double NightTimeAccelTime { get; set; }
             public Locations[] Locations { get; set; }
             public Locations[] LocationsPTT { get; set; }
         }
@@ -38,24 +40,25 @@ namespace r1ft.DynamicTimeCyle
 
         public class PTTConfig
         {
-            public bool enabled { get; set; }
-            public string initial_offraid_position { get; set; }
-            public bool reset_offraid_position_on_player_die { get; set; }
-            public bool hideout_multistash_enabled { get; set; }
-            public bool laboratory_access_restriction { get; set; }
-            public string[] laboratory_access_via { get; set; }
-            public bool player_scav_move_offraid_position { get; set; }
-            public bool bypass_exfils_override { get; set; }
-            public bool bypass_uninstall_procedure { get; set; }
-            public bool bypass_luas_custom_spawn_points_tweak { get; set; }
-            public object restrictions_in_raid { get; set; }
-            public object offraid_regen_config { get; set; }
-            public string[] hideout_main_stash_access_via { get; set; }
-            public object[] hideout_secondary_stashes { get; set; }
-            public bool traders_access_restriction { get; set; }
-            public object traders_config { get; set; }
-            public object exfiltrations { get; set; }
-            public object infiltrations { get; set; }
+                public bool enabled { get; set; }
+                public string initial_offraid_position { get; set; }
+                public bool reset_offraid_position_on_player_die { get; set; }
+                public bool hideout_multistash_enabled { get; set; }
+                public bool laboratory_access_restriction { get; set; }
+                public string[] laboratory_access_via { get; set; }
+                public bool player_scav_move_offraid_position { get; set; }
+                public bool workbench_always_enabled { get; set; }
+                public bool bypass_exfils_override { get; set; }
+                public bool bypass_uninstall_procedure { get; set; }
+                public bool bypass_luas_custom_spawn_points_tweak { get; set; }
+                public object restrictions_in_raid { get; set; }
+                public object offraid_regen_config { get; set; }
+                public string[] hideout_main_stash_access_via { get; set; }
+                public object[] hideout_secondary_stashes { get; set; }
+                public bool traders_access_restriction { get; set; }
+                public object traders_config { get; set; }
+                public object exfiltrations { get; set; }
+                public object infiltrations { get; set; }
         }
 
 
@@ -87,7 +90,7 @@ namespace r1ft.DynamicTimeCyle
             File.WriteAllText(_dtcconfig, writestr);
         }
 
-        public static List<Locations> GetDTCConfig(out bool pttenabled)
+        public static List<Locations> GetDTCConfig(out bool pttenabled, out bool nightTimeAccel, out double nightTimeAccelTime)
         {
             System.IO.FileStream f_pttconfig = new System.IO.FileStream(_dtcconfig, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
 
@@ -106,23 +109,17 @@ namespace r1ft.DynamicTimeCyle
             }
 
             var config = JsonConvert.DeserializeObject<DTCConfig>(jsonstring);
-            pttenabled = config.PTTEnabled;
+            pttenabled = Network.GetPttAvailiable();
+            nightTimeAccel = config.NightTimeAccel;
+            nightTimeAccelTime = config.NightTimeAccelTime;
             var list = new List<Locations>();
             if (pttenabled)
             {
-                if (Network.GetPttAvailiable())
-                {
-                    CreateList(config.LocationsPTT);
-                }
-                else
-                {
-                    WriteDTCConfig(false);
-                    CreateList(config.Locations);
-                }
+                CreateList(config.LocationsPTT);
             }
             else
             {
-                pttenabled = false;
+                WriteDTCConfig(false);
                 CreateList(config.Locations);
             }
 

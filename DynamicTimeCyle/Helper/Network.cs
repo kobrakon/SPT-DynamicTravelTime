@@ -2,6 +2,7 @@
 using EFT;
 using EFT.UI;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace r1ft.DynamicTimeCyle
 {
@@ -18,9 +19,8 @@ namespace r1ft.DynamicTimeCyle
                 if (pttEnabled)
                 {
                     var posrequst = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/offraidPosition");
-                    var ptt = JsonConvert.DeserializeObject<Config.PTTProfile>(posrequst);
-                    pos = ptt.offraidPosition;
-                    if (pos == "null")
+                    pos = posrequst.ToString().Replace("\"", "");
+                    if (pos == "")
                         err = true;
 
                     var request = Aki.Common.Http.RequestHandler.GetJson("/dynamictimecycle/config");
@@ -68,7 +68,7 @@ namespace r1ft.DynamicTimeCyle
             return int.Parse(data.ToString());
         }
 
-        public static bool SetOffRaidPosition(bool pttEnabled, Config.PTTConfig main, double inhour, double inmin, out string pos, out double hour, out double min, out bool hideout)
+        public static bool SetOffRaidPosition(bool pttEnabled, Config.PTTConfig main, double inhour, double inmin, bool nightAccel, double nightAccelTime, out string pos, out double hour, out double min, out bool hideout)
         {
             if (pttEnabled)
             {
@@ -81,11 +81,28 @@ namespace r1ft.DynamicTimeCyle
 
                 if (inhour == 99)
                 {
-                    hideout = config.hideout;
                     hour = config.hour;
                     min = config.min;
                 }
+                else
+                {
+                    if (nightAccel)
+                    {
+                        if (inhour >= 22 || inhour < 6)
+                        {
+                            min += nightAccelTime;
 
+                            if (min > 60)
+                            {
+                                hour += Mathf.RoundToInt((int)min / 60);
+                                min -= Mathf.RoundToInt((int)min / 60) * 60;
+
+                                if (hour > 24)
+                                    hour -= 24;
+                            }
+                        }
+                    }
+                }
 
                 foreach (var hideoutposition in main.hideout_main_stash_access_via)
                 {
