@@ -1,4 +1,4 @@
-﻿using Comfort.Common;
+using Comfort.Common;
 using EFT;
 using EFT.UI;
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using TMPro;
 
 namespace r1ft.DynamicTimeCyle
 {
@@ -158,6 +159,38 @@ namespace r1ft.DynamicTimeCyle
 
             _cacheTimeHour = currentDateTime.Hour;
             _cacheTimeMin = currentDateTime.Minute;
+
+            var current = GameObject.Find(Objects.currentPhase);
+
+            if (current == null)
+            {
+                MonoBehaviourSingleton<PreloaderUI>.Instance.Console.AddLog("Couldn't get current phase object.", "DEBUG");
+                return;
+            }
+
+            current.SetActive(false);
+
+            var next = GameObject.Find(Objects.nextPhase + Objects.Label);
+
+            if (next == null)
+            {
+                MonoBehaviourSingleton<PreloaderUI>.Instance.Console.AddLog("Couldn't get next phase object.", "DEBUG");
+                return;
+            }
+
+            var text = next.GetComponent<CustomTextMeshProUGUI>().text;
+
+            text = $"< mspace = 0.56em > {currentDateTime.Hour} </ mspace >:< mspace = 0.56em > {currentDateTime.Minute} </ mspace >:< mspace = 0.56em > {currentDateTime.Millisecond} </ mspace >";
+
+            var button = GameObject.Find(Objects.nextPhase + "/Background");
+
+            if (button == null)
+            {
+                MonoBehaviourSingleton<PreloaderUI>.Instance.Console.AddLog("couldn't get button.", "DEBUG");
+                return;
+            }
+
+            button.SetActive(false);
 
             return;
         }
